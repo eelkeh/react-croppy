@@ -54,10 +54,16 @@ var Cropper = (function (_Component) {
     _Component.call(this, props);
 
     this.getPosition = function (e) {
-      // @TODO this forces reflow, can we do something for
-      // performance by batches operations?
-      var x = e.pageX - _this.offsetLeft;
-      var y = e.pageY - _this.offsetTop;
+      var off = _utils.recursiveOffset(e.target);
+      console.log(off);
+      // let x = e.pageX - this.offsetLeft - off.x;
+      // let y = e.pageY - this.offsetTop - off.y;
+      var x = e.pageX + off.x;
+      var y = e.pageY + off.y;
+      console.log(x, y);
+      // let x = e.layerX;
+      // let y = e.layerY;
+      //console.log(x, y, x1, y1);
       return { x: x, y: y };
     };
 
@@ -273,12 +279,13 @@ var Cropper = (function (_Component) {
       'div',
       {
         onDrag: this.onDrag,
-        onMouseDown: this.onMouseDown,
-        style: _extends({ position: 'relative' }, this.props.style)
+        style: _extends({ position: 'relative' }, this.props.style),
+        onMouseDown: this.onMouseDown
       },
       _react2['default'].createElement(
         'div',
-        { style: { position: 'absolute', top: 0, left: 0, zIndex: 1 } },
+        {
+          style: { position: 'absolute', top: 0, left: 0, zIndex: 1 } },
         _react2['default'].createElement(_Rect2['default'], {
           canvasWidth: this.state.canvasWidth,
           canvasHeight: this.state.canvasHeight,

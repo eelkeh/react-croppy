@@ -1,6 +1,6 @@
 import React, {PropTypes, Component} from 'react';
 import Rect from './Rect';
-import {clip, isRetina} from '../utils';
+import {clip, isRetina, recursiveOffset} from '../utils';
 
 export default class Cropper extends Component {
 
@@ -56,10 +56,16 @@ export default class Cropper extends Component {
   }
 
   getPosition = (e) => {
-    // @TODO this forces reflow, can we do something for
-    // performance by batches operations?
-    let x = e.pageX - this.offsetLeft;
-    let y = e.pageY - this.offsetTop;
+    let off = recursiveOffset(e.target);
+    console.log(off);
+    // let x = e.pageX - this.offsetLeft - off.x;
+    // let y = e.pageY - this.offsetTop - off.y;
+    let x = e.pageX + off.x;
+    let y = e.pageY + off.y;
+    console.log(x, y);
+    // let x = e.layerX;
+    // let y = e.layerY;
+    //console.log(x, y, x1, y1);
     return {x, y};
   }
 
@@ -217,10 +223,11 @@ export default class Cropper extends Component {
     return (
       <div
         onDrag={this.onDrag}
-        onMouseDown={this.onMouseDown}
         style={{position: 'relative', ...this.props.style}}
+        onMouseDown={this.onMouseDown}
         >
-        <div style={{position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
+        <div
+          style={{position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
           <Rect
             canvasWidth={this.state.canvasWidth}
             canvasHeight={this.state.canvasHeight}
