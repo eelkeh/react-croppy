@@ -1,6 +1,6 @@
 import React, {PropTypes, Component} from 'react';
 import Rect from './Rect';
-import {clip, isRetina, recursiveOffset} from '../utils';
+import {clip, isRetina, recursiveOffset, getOffset} from '../utils';
 
 export default class Cropper extends Component {
 
@@ -56,12 +56,12 @@ export default class Cropper extends Component {
   }
 
   getPosition = (e) => {
-    let off = recursiveOffset(e.target);
-    console.log(off);
+    //let off = recursiveOffset(e.target);
+    let offset = getOffset(e.target);
     // let x = e.pageX - this.offsetLeft - off.x;
     // let y = e.pageY - this.offsetTop - off.y;
-    let x = e.pageX + off.x;
-    let y = e.pageY + off.y;
+    let x = e.pageX - offset.left;
+    let y = e.pageY - offset.top;
     console.log(x, y);
     // let x = e.layerX;
     // let y = e.layerY;
