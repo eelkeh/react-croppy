@@ -2,10 +2,8 @@
 
 exports.__esModule = true;
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+function _interopRequire(obj) { return obj && obj.__esModule ? obj['default'] : obj; }
 
-var _componentsCropperJsx = require('./components/Cropper.jsx');
+var _componentsCropper = require('./components/Cropper');
 
-var _componentsCropperJsx2 = _interopRequireDefault(_componentsCropperJsx);
-
-exports.Cropper = _componentsCropperJsx2['default'];
+exports.Cropper = _interopRequire(_componentsCropper);

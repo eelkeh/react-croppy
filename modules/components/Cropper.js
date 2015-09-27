@@ -16,9 +16,9 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _RectJsx = require('./Rect.jsx');
+var _Rect = require('./Rect');
 
-var _RectJsx2 = _interopRequireDefault(_RectJsx);
+var _Rect2 = _interopRequireDefault(_Rect);
 
 var _utils = require('../utils');
 
@@ -279,7 +279,7 @@ var Cropper = (function (_Component) {
       _react2['default'].createElement(
         'div',
         { style: { position: 'absolute', top: 0, left: 0, zIndex: 1 } },
-        _react2['default'].createElement(_RectJsx2['default'], {
+        _react2['default'].createElement(_Rect2['default'], {
           canvasWidth: this.state.canvasWidth,
           canvasHeight: this.state.canvasHeight,
           width: this.state.width,

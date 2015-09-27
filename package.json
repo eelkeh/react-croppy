@@ -1,5 +1,5 @@
 {
-  "name": "croppy",
+  "name": "react-croppy",
   "version": "0.0.1",
   "description": "A pure image cropper for React",
   "main": "modules/index.js",

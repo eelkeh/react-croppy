@@ -1,5 +1,5 @@
 import React, {PropTypes, Component} from 'react';
-import Rect from './Rect.jsx';
+import Rect from './Rect';
 import {clip, isRetina} from '../utils';
 
 export default class Cropper extends Component {

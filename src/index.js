@@ -1,1 +1,1 @@
-export Cropper from './components/Cropper.jsx';
+export {default as Cropper} from './components/Cropper';
