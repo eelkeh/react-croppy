@@ -275,17 +275,30 @@ var Cropper = (function (_Component) {
   };
 
   Cropper.prototype.render = function render() {
+    var _state3 = this.state;
+    var canvasWidth = _state3.canvasWidth;
+    var canvasHeight = _state3.canvasHeight;
+
     return _react2['default'].createElement(
       'div',
       {
         onDrag: this.onDrag,
-        style: _extends({ position: 'relative' }, this.props.style),
+        style: _extends({
+          position: 'relative',
+          height: 0,
+          paddingBottom: canvasHeight / canvasWidth * 100 + '%'
+        }, this.props.style),
         onMouseDown: this.onMouseDown
       },
       _react2['default'].createElement(
         'div',
         {
-          style: { position: 'absolute', top: 0, left: 0, zIndex: 1 } },
+          style: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 1
+          } },
         _react2['default'].createElement(_Rect2['default'], {
           canvasWidth: this.state.canvasWidth,
           canvasHeight: this.state.canvasHeight,

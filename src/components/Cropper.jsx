@@ -220,14 +220,25 @@ export default class Cropper extends Component {
   }
 
   render() {
+    const {canvasWidth, canvasHeight} = this.state;
     return (
       <div
         onDrag={this.onDrag}
-        style={{position: 'relative', ...this.props.style}}
+        style={{
+          position: 'relative',
+          height: 0,
+          paddingBottom: (canvasHeight / canvasWidth) * 100 + '%',
+          ...this.props.style
+        }}
         onMouseDown={this.onMouseDown}
         >
         <div
-          style={{position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 1
+          }}>
           <Rect
             canvasWidth={this.state.canvasWidth}
             canvasHeight={this.state.canvasHeight}
