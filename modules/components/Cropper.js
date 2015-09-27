@@ -54,12 +54,12 @@ var Cropper = (function (_Component) {
     _Component.call(this, props);
 
     this.getPosition = function (e) {
-      var off = _utils.recursiveOffset(e.target);
-      console.log(off);
+      //let off = recursiveOffset(e.target);
+      var offset = _utils.getOffset(e.target);
       // let x = e.pageX - this.offsetLeft - off.x;
       // let y = e.pageY - this.offsetTop - off.y;
-      var x = e.pageX + off.x;
-      var y = e.pageY + off.y;
+      var x = e.pageX - offset.left;
+      var y = e.pageY - offset.top;
       console.log(x, y);
       // let x = e.layerX;
       // let y = e.layerY;
