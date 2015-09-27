@@ -300,7 +300,7 @@ var Cropper = (function (_Component) {
       _react2['default'].createElement('img', {
         ref: 'image',
         onLoad: this.computeSize,
-        style: { position: 'absolute', top: 0, left: 0, zIndex: 0 },
+        style: { position: 'absolute', top: 0, left: 0, zIndex: 0, maxWidth: '100%' },
         src: this.props.src })
     );
   };
