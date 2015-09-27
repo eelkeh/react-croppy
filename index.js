@@ -2,7 +2,7 @@ import React from 'react';
 import Cropper from '../src/components/Cropper';
 
 React.render(
-  <div style={{width: '700px', margin: '0 auto' }}>
+  <div style={{width: '700px', margin: '0 auto', position: 'fixed', height: '50%', overflow: 'auto', top: '12px' }}>
     <Cropper
       style={{maxWith: '100%'}}
       src='http://i.imgur.com/6K5iXpV.jpg'
