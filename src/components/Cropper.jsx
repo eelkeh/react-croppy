@@ -216,8 +216,7 @@ export default class Cropper extends Component {
     };
     console.log(x, y);
 
-    if (x < 1 && y < 1) {
-      console.log('<');
+    if (x <= 1 && y <= 1 && width <= 1 && height <= 1) {
       x = x * canvasWidth;
       y = y * canvasHeight;
       width = width * canvasWidth;
