@@ -9,25 +9,28 @@ export default class Cropper extends Component {
     minCropWidth: PropTypes.number,
     maxCropWidth: PropTypes.number,
     borderColor: PropTypes.string,
-    style: PropTypes.object
+    style: PropTypes.object,
+    start: PropTypes.array
   }
 
   static defaultProps = {
     minCropWidth: 0,
     minCropHeight: 0,
     borderColor: '#FF4136', // red
-    style: {}
+    style: {},
+    start: [null, null, null, null]
   }
 
   constructor(props) {
     super(props);
+    let [x, y, width, height] = this.props.start;
     this.state = {
       canvasWidth: 0,
       canvasHeight: 0,
-      x: null,
-      y: null,
-      width: 0,
-      height: 0,
+      x: x,
+      y: y,
+      width: width,
+      height: height,
       resizing: false,
       dragging: false,
       isRetina: isRetina()
@@ -204,18 +207,32 @@ export default class Cropper extends Component {
     let cs = window.getComputedStyle(imgNode);
     let canvasWidth = parseInt(cs.getPropertyValue('width').slice(0, -2), 10);
     let canvasHeight = parseInt(cs.getPropertyValue('height').slice(0, -2), 10);
-    let {isRetina} = this.state;
+    let {isRetina, x, y, width, height} = this.state;
 
     this.image = this.image || {};
     this.image.nativeSize = {
       width: imgNode.naturalWidth,
       height: imgNode.naturalHeight
     };
+    console.log(x, y);
+
+    if (x < 1 && y < 1) {
+      console.log('<');
+      x = x * canvasWidth;
+      y = y * canvasHeight;
+      width = width * canvasWidth;
+      height = height * canvasHeight;
+    }
+
     this.setState({
       containerWidth: isRetina ? canvasWidth : canvasWidth,
       containerHeight: isRetina ? canvasHeight : canvasHeight,
       canvasWidth,
-      canvasHeight
+      canvasHeight,
+      x,
+      y,
+      width,
+      height
     });
   }
 
