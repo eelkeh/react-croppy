@@ -8,6 +8,7 @@ React.render(
       style={{maxWith: '100%'}}
       src='http://i.imgur.com/6K5iXpV.jpg'
       borderColor='#FFDC00'
+      start={[0.1, 0.1, 0.5, 0.5]}
       aspectRatio={16 / 9}/>
     <p>Something else</p>
   </div>, document.getElementById('root'));
