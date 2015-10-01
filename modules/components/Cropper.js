@@ -2,6 +2,8 @@
 
 exports.__esModule = true;
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -32,7 +34,8 @@ var Cropper = (function (_Component) {
       minCropWidth: _react.PropTypes.number,
       maxCropWidth: _react.PropTypes.number,
       borderColor: _react.PropTypes.string,
-      style: _react.PropTypes.object
+      style: _react.PropTypes.object,
+      start: _react.PropTypes.array
     },
     enumerable: true
   }, {
@@ -41,7 +44,8 @@ var Cropper = (function (_Component) {
       minCropWidth: 0,
       minCropHeight: 0,
       borderColor: '#FF4136', // red
-      style: {}
+      style: {},
+      start: [null, null, null, null]
     },
     enumerable: true
   }]);
@@ -221,28 +225,55 @@ var Cropper = (function (_Component) {
       var cs = window.getComputedStyle(imgNode);
       var canvasWidth = parseInt(cs.getPropertyValue('width').slice(0, -2), 10);
       var canvasHeight = parseInt(cs.getPropertyValue('height').slice(0, -2), 10);
-      var isRetina = _this.state.isRetina;
+      var _state3 = _this.state;
+      var isRetina = _state3.isRetina;
+      var x = _state3.x;
+      var y = _state3.y;
+      var width = _state3.width;
+      var height = _state3.height;
 
       _this.image = _this.image || {};
       _this.image.nativeSize = {
         width: imgNode.naturalWidth,
         height: imgNode.naturalHeight
       };
+      console.log(x, y, width, height);
+
+      if (x <= 1 && y <= 1 && width <= 1 && height <= 1) {
+        x = x * canvasWidth;
+        y = y * canvasHeight;
+        width = width * canvasWidth;
+        height = height * canvasHeight;
+      }
+
+      console.log(x, y, width, height);
+
       _this.setState({
         containerWidth: isRetina ? canvasWidth : canvasWidth,
         containerHeight: isRetina ? canvasHeight : canvasHeight,
         canvasWidth: canvasWidth,
-        canvasHeight: canvasHeight
+        canvasHeight: canvasHeight,
+        x: x,
+        y: y,
+        width: width,
+        height: height
       });
     };
+
+    var _props$start = _slicedToArray(this.props.start, 4);
+
+    var x = _props$start[0];
+    var y = _props$start[1];
+    var width = _props$start[2];
+    var height = _props$start[3];
 
     this.state = {
       canvasWidth: 0,
       canvasHeight: 0,
-      x: null,
-      y: null,
-      width: 0,
-      height: 0,
+      x: x,
+      y: y,
+      width: width,
+      height: height,
       resizing: false,
       dragging: false,
       isRetina: _utils.isRetina()
@@ -275,9 +306,9 @@ var Cropper = (function (_Component) {
   };
 
   Cropper.prototype.render = function render() {
-    var _state3 = this.state;
-    var canvasWidth = _state3.canvasWidth;
-    var canvasHeight = _state3.canvasHeight;
+    var _state4 = this.state;
+    var canvasWidth = _state4.canvasWidth;
+    var canvasHeight = _state4.canvasHeight;
 
     return _react2['default'].createElement(
       'div',
