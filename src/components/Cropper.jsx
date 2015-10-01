@@ -214,7 +214,7 @@ export default class Cropper extends Component {
       width: imgNode.naturalWidth,
       height: imgNode.naturalHeight
     };
-    console.log(x, y);
+    console.log(x, y, width, height);
 
     if (x <= 1 && y <= 1 && width <= 1 && height <= 1) {
       x = x * canvasWidth;
@@ -222,6 +222,8 @@ export default class Cropper extends Component {
       width = width * canvasWidth;
       height = height * canvasHeight;
     }
+
+    console.log(x, y, width, height);
 
     this.setState({
       containerWidth: isRetina ? canvasWidth : canvasWidth,
