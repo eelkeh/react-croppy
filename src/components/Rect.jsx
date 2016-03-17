@@ -1,10 +1,13 @@
 import React, {PropTypes, Component} from 'react';
+import ReactDOM from 'react-dom';
+import {multiply} from '../utils';
 
 export default class Rect extends Component {
 
   static propTypes = {
     canvasWidth: PropTypes.number.isRequired,
     canvasHeight: PropTypes.number.isRequired,
+    handlerSize: PropTypes.number.isRequired,
     borderColor: PropTypes.string.isRequired,
     isRetina: PropTypes.bool.isRequired
   };
@@ -14,17 +17,14 @@ export default class Rect extends Component {
   }
 
   paint = (coords) => {
-    let {x, y, width, height} = coords;
-    let handlerSize = 20;
+    let {handlerSize} = this.props;
     if (this.props.isRetina) {
-      x = x * 2;
-      y = y * 2;
-      width = width * 2;
-      height = height * 2;
+      coords = multiply(coords, 2);
       handlerSize = handlerSize * 2;
     }
+    let {x, y, width, height} = coords;
     let {canvasWidth, canvasHeight} = this.props;
-    let node = React.findDOMNode(this);
+    let node = ReactDOM.findDOMNode(this);
     let context = node.getContext('2d');
     context.clearRect(0, 0, node.width, node.height);
     if (!width || !height) {

@@ -1,4 +1,5 @@
 import React, {PropTypes, Component} from 'react';
+import ReactDOM from 'react-dom';
 import Rect from './Rect';
 import {clip, isRetina, recursiveOffset, getOffset} from '../utils';
 
@@ -10,15 +11,20 @@ export default class Cropper extends Component {
     maxCropWidth: PropTypes.number,
     borderColor: PropTypes.string,
     style: PropTypes.object,
-    start: PropTypes.array
+    start: PropTypes.array,
+    startChange: PropTypes.bool,
+    isLoading: PropTypes.bool,
+    onCrop: PropTypes.func,
+    onCropEnd: PropTypes.func
   }
 
   static defaultProps = {
     minCropWidth: 0,
     minCropHeight: 0,
     borderColor: '#FF4136', // red
-    style: {},
-    start: [null, null, null, null]
+    handlerSize: 20,
+    start: [null, null, null, null],
+    style: {}
   }
 
   constructor(props) {
@@ -37,9 +43,19 @@ export default class Cropper extends Component {
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    // let [x, y, width, height] = this.sizeFromPercentage(nextProps.start);
+    // this.setState({
+    //   x,
+    //   y,
+    //   width,
+    //   height
+    // });
+  }
+
   componentDidMount() {
     this.setupListeners();
-    let node = React.findDOMNode(this);
+    let node = ReactDOM.findDOMNode(this);
     this.offsetLeft = node.offsetLeft;
     this.offsetTop = node.offsetTop;
   }
@@ -51,6 +67,7 @@ export default class Cropper extends Component {
   setupListeners() {
     window.addEventListener('mousemove', this.onMouseMove);
     window.addEventListener('mouseup', this.onMouseUp);
+    window.addEventListener('resize', this.onWindowResize);
   }
 
   teardownListeners() {
@@ -59,16 +76,9 @@ export default class Cropper extends Component {
   }
 
   getPosition = (e) => {
-    //let off = recursiveOffset(e.target);
     let offset = getOffset(e.target);
-    // let x = e.pageX - this.offsetLeft - off.x;
-    // let y = e.pageY - this.offsetTop - off.y;
     let x = e.pageX - offset.left;
     let y = e.pageY - offset.top;
-    console.log(x, y);
-    // let x = e.layerX;
-    // let y = e.layerY;
-    //console.log(x, y, x1, y1);
     return {x, y};
   }
 
@@ -79,11 +89,12 @@ export default class Cropper extends Component {
   }
 
   posCollidesResizeHandler = (pos) => {
+    let {handlerSize} = this.props;
     let {x, y} = pos;
-    let handlerX = this.state.x + this.state.width - 20;
-    let handlerY = this.state.y + this.state.height - 20;
-    return ((x >= handlerX && x <= (handlerX + 20))
-        && (y >= handlerY && y <= (handlerY + 20)));
+    let handlerX = this.state.x + this.state.width - handlerSize;
+    let handlerY = this.state.y + this.state.height - handlerSize;
+    return ((x >= handlerX && x <= (handlerX + handlerSize))
+        && (y >= handlerY && y <= (handlerY + handlerSize)));
   }
 
   cropIsActive = () => {
@@ -91,6 +102,7 @@ export default class Cropper extends Component {
   }
 
   getDelta = (pos) => {
+    let {handlerSize} = this.props;
     return {
       x: pos.x - this.state.x,
       y: pos.y - this.state.y
@@ -114,7 +126,9 @@ export default class Cropper extends Component {
       });
     } else {
       if (this.posCollidesResizeHandler(pos)) {
-        this.setState({resizing: true});
+        this.setState({
+          resizing: true,
+        });
       } else {
         this.setState({
           dragging: true,
@@ -145,12 +159,15 @@ export default class Cropper extends Component {
     }
     e.preventDefault();
     let {x, y} = this.getPosition(e);
+    let ratio = this.getRatio();
     let {width, height, containerWidth, containerHeight, delta} = this.state;
     let newState = {};
     if (this.state.dragging) {
       newState = {
         x: clip(x - delta.x, 0, containerWidth - width),
-        y: clip(y - delta.y, 0, containerHeight - height)
+        y: clip(y - delta.y, 0, containerHeight - height),
+        width,
+        height
       };
     }
     else if (this.state.resizing) {
@@ -159,36 +176,43 @@ export default class Cropper extends Component {
       if (width <= 0 || height <= 0) {
         return;
       }
-      newState = this.onResize({
-        width: clip(width, 0, containerWidth - this.state.x),
-        height: clip(height, 0, containerWidth - this.state.y)
-      });
+      newState = {
+        x: this.state.x, 
+        y: this.state.y,
+        ...this.onResize({
+          width: clip(width, 0, containerWidth - this.state.x),
+          height: clip(height, 0, containerWidth - this.state.y)
+        })
+      }
+    }
+    if (this.props.onCrop) {
+      this.props.onCrop(Object.assign({}, this.toNativeMetrics(newState)));
     }
     this.setState(newState);
-    return;
-  }
-
-  isInBounds = ({x, y, width, height}) => {
-    return ((x + width <= this.state.containerWidth) &&
-            (y + height <= this.state.containerHeight));
   }
 
   getRatio() {
-    return this.state.containerWidth / this.image.nativeSize.width;
+    return this.image.nativeSize.width / this.state.containerWidth;
+  }
+
+  toNativeMetrics({x, y, width, height}) {
+    let ratio = this.getRatio();
+    return {
+      width: width * ratio,
+      height: height * ratio,
+      x: x * ratio,
+      y: y * ratio
+    }
   }
 
   onMouseUp = () => {
     if (!this.state.dragging && !this.state.resizing) {
       return;
     }
-    let ratio = this.getRatio();
     let {x, y, width, height} = this.state;
     let data = {
       nativeSize: this.image.nativeSize,
-      x: ratio * x,
-      y: ratio * y,
-      width: ratio * width,
-      height: ratio * height
+      ...this.toNativeMetrics({x, y, width, height})
     };
 
     this.setState({
@@ -196,40 +220,64 @@ export default class Cropper extends Component {
       dragging: false
     });
 
-    if (this.props.onCrop) {
-      this.props.onCrop(data);
+    if (this.props.onCropEnd) {
+      this.props.onCropEnd(data);
     }
 
   }
 
-  computeSize = () => {
-    let imgNode = React.findDOMNode(this.refs.image);
+  sizeFromPercentage = (start) => {
+    let [x, y, width, height] = start;
+    const {containerWidth, containerHeight} = this.state;
+    if (x <= 1 && y <= 1 && width <= 1 && height <= 1) {
+      x = x * containerWidth;
+      y = y * containerHeight;
+      width = width * containerWidth;
+      height = height * containerHeight;
+    }
+    return [x, y, width, height];
+  }
+
+  onWindowResize = () => {
+    this.computeSize();
+  }
+
+  getImageNode() {
+    return ReactDOM.findDOMNode(this.refs.image);
+  }
+
+  imageDomSize() {
+    let imgNode = this.getImageNode();
     let cs = window.getComputedStyle(imgNode);
-    let canvasWidth = parseInt(cs.getPropertyValue('width').slice(0, -2), 10);
-    let canvasHeight = parseInt(cs.getPropertyValue('height').slice(0, -2), 10);
+    let width = parseInt(cs.getPropertyValue('width').slice(0, -2), 10);
+    let height = parseInt(cs.getPropertyValue('height').slice(0, -2), 10);
+    return {width, height};
+  }
+
+  computeSize = () => {
     let {isRetina, x, y, width, height} = this.state;
+    let imgNode = this.getImageNode();
+    let domSize = this.imageDomSize();
+    this.domSize = domSize;
 
     this.image = this.image || {};
     this.image.nativeSize = {
       width: imgNode.naturalWidth,
       height: imgNode.naturalHeight
     };
-    console.log(x, y, width, height);
 
     if (x <= 1 && y <= 1 && width <= 1 && height <= 1) {
-      x = x * canvasWidth;
-      y = y * canvasHeight;
-      width = width * canvasWidth;
-      height = height * canvasHeight;
+      x = x * domSize.width;
+      y = y * domSize.height;
+      width = width * domSize.width;
+      height = height * domSize.height;
     }
 
-    console.log(x, y, width, height);
-
     this.setState({
-      containerWidth: isRetina ? canvasWidth : canvasWidth,
-      containerHeight: isRetina ? canvasHeight : canvasHeight,
-      canvasWidth,
-      canvasHeight,
+      containerWidth: domSize.width,
+      containerHeight: domSize.height,
+      canvasWidth: domSize.width,
+      canvasHeight: domSize.height,
       x,
       y,
       width,
@@ -250,6 +298,7 @@ export default class Cropper extends Component {
         }}
         onMouseDown={this.onMouseDown}
         >
+        {this.props.children}
         <div
           style={{
             position: 'absolute',
@@ -265,13 +314,20 @@ export default class Cropper extends Component {
             x={this.state.x}
             y={this.state.y}
             borderColor={this.props.borderColor}
+            handlerSize={this.props.handlerSize}
             isRetina={this.state.isRetina}
           />
         </div>
         <img
           ref='image'
           onLoad={this.computeSize}
-          style={{position: 'absolute', top: 0, left: 0, zIndex: 0, maxWidth: '100%'}}
+          style={{
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            zIndex: 0, 
+            maxWidth: '100%'
+          }}
           src={this.props.src}/>
       </div>
     );
