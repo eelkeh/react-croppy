@@ -1,4 +1,10 @@
 {
-  "stage": 0,
-  "loose": ["es6.modules", "es6.classes"]
+  "presets": ["es2015", "stage-0", "react"],
+  "env": {
+    "commonjs": {
+      "plugins": [
+        ["transform-es2015-modules-commonjs", { "loose": true }]
+      ]
+    }
+  }
 }

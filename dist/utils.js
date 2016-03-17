@@ -2,11 +2,18 @@
 
 exports.__esModule = true;
 exports.clip = clip;
+exports.multiply = multiply;
 exports.isRetina = isRetina;
 exports.getOffset = getOffset;
-
 function clip(n, min, max) {
   return Math.min(Math.max(n, min), max);
+}
+
+function multiply(obj, n) {
+  for (var key in obj) {
+    obj[key] = n * obj[key];
+  }
+  return obj;
 }
 
 function isRetina() {
@@ -14,7 +21,7 @@ function isRetina() {
 }
 
 function getOffset(elem) {
-  // from the jquery source
+  // taken from the jquery source
   var rect = elem.getBoundingClientRect();
   var doc = elem.ownerDocument;
   var docElem = doc.documentElement;

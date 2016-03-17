@@ -25,7 +25,7 @@ module.exports = {
   module: {
     loaders: [{
       test: /\.jsx?$/,
-      loaders: ['babel?stage=0'],
+      loaders: ['babel'],
       include: [
         path.join(__dirname, 'demo'),
         path.join(__dirname, 'src')
