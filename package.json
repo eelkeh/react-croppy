@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node devServer.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./scripts/build.sh",
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir dist"
   },
   "keywords": [
