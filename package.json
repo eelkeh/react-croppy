@@ -2,7 +2,7 @@
   "name": "react-croppy",
   "version": "0.0.1",
   "description": "A pure image cropper for React",
-  "main": "modules/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "node devServer.js",
     "test": "echo \"Error: no test specified\" && exit 1",
