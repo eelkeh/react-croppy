@@ -1,6 +1,6 @@
 {
   "name": "react-croppy",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A pure image cropper for React",
   "main": "dist/index.js",
   "files": [
