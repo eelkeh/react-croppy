@@ -13,7 +13,7 @@
     "clean": "rm -rf dist/*",
     "prepublish": "npm run clean && npm run build:commonjs",
     "docs:push": "git subtree push --prefix demo origin gh-pages",
-    "docs:build": "babel demo --out-file demo/bundle.js"
+    "docs:build": "webpack demo/index.js --out-file demo/bundle.js"
   },
   "keywords": [
     "image",
