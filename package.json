@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "A pure image cropper for React",
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "node devServer.js",
     "test": "echo \"Error: no test specified\" && exit 1",
