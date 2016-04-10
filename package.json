@@ -11,7 +11,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir dist",
     "clean": "rm -rf dist/*",
-    "prepublish": "npm run clean && npm run build:commonjs"
+    "prepublish": "npm run clean && npm run build:commonjs",
+    "docs:push": "git subtree push --prefix demo origin gh-pages",
+    "docs:build": "babel demo --out-file demo/bundle.js"
   },
   "keywords": [
     "image",
