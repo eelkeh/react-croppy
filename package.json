@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node devServer.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir dist"
+    "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir dist",
+    "clean": "rm -rf dist/*",
+    "prepublish": "npm run clean && npm run build:commonjs"
   },
   "keywords": [
     "image",
@@ -16,7 +18,7 @@
   "author": "Eelke Hermens",
   "license": "MIT",
   "peerDependencies": {
-    "react": "^0.14.0"
+    "react": "^0.14.0 || ^15.0.0-0"
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
@@ -27,6 +29,9 @@
     "babel-preset-stage-0": "^6.5.0",
     "eventsource-polyfill": "^0.9.6",
     "express": "^4.13.3",
+    "jsdom": "^8.1.0",
+    "mocha": "^2.4.5",
+    "mocha-jsdom": "^1.1.0",
     "react": "^0.14.0",
     "react-dom": "^0.14.1",
     "webpack": "^1.12.2",

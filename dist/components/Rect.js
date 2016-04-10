@@ -2,8 +2,6 @@
 
 exports.__esModule = true;
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require('react');
@@ -33,20 +31,22 @@ var Rect = function (_Component) {
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Rect).call(this, props));
 
     _this.paint = function (coords) {
-      var handlerSize = _this.props.handlerSize;
+      var _this$props = _this.props;
+      var handlerSize = _this$props.handlerSize;
+      var pixelRatio = _this$props.pixelRatio;
 
-      if (_this.props.isRetina) {
-        coords = (0, _utils.multiply)(coords, 2);
-        handlerSize = handlerSize * 2;
+      if (pixelRatio > 1) {
+        coords = (0, _utils.multiply)(coords, pixelRatio);
+        handlerSize = handlerSize * pixelRatio;
       }
       var _coords = coords;
       var x = _coords.x;
       var y = _coords.y;
       var width = _coords.width;
       var height = _coords.height;
-      var _this$props = _this.props;
-      var canvasWidth = _this$props.canvasWidth;
-      var canvasHeight = _this$props.canvasHeight;
+      var _this$props2 = _this.props;
+      var canvasWidth = _this$props2.canvasWidth;
+      var canvasHeight = _this$props2.canvasHeight;
 
       var node = _reactDom2.default.findDOMNode(_this);
       var context = node.getContext('2d');
@@ -94,19 +94,19 @@ var Rect = function (_Component) {
       var _props2 = this.props;
       var canvasWidth = _props2.canvasWidth;
       var canvasHeight = _props2.canvasHeight;
-      var isRetina = _props2.isRetina;
+      var pixelRatio = _props2.pixelRatio;
 
-      var props = {};
-      if (isRetina) {
+      var props = {
+        width: canvasWidth * pixelRatio,
+        height: canvasHeight * pixelRatio
+      };
+      if (pixelRatio > 1) {
         props.style = {
           width: canvasWidth,
           height: canvasHeight
         };
       }
-      return _react2.default.createElement('canvas', _extends({}, props, {
-        width: isRetina ? canvasWidth * 2 : canvasWidth,
-        height: isRetina ? canvasHeight * 2 : canvasHeight
-      }));
+      return _react2.default.createElement('canvas', props);
     }
   }]);
 
@@ -118,6 +118,6 @@ Rect.propTypes = {
   canvasHeight: _react.PropTypes.number.isRequired,
   handlerSize: _react.PropTypes.number.isRequired,
   borderColor: _react.PropTypes.string.isRequired,
-  isRetina: _react.PropTypes.bool.isRequired
+  pixelRatio: _react.PropTypes.number.isRequired
 };
 exports.default = Rect;

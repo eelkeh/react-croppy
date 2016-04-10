@@ -12,9 +12,11 @@ app.use(require('webpack-dev-middleware')(compiler, {
 }));
 
 app.use(require('webpack-hot-middleware')(compiler));
-app.get('*', function(req, res) {
+app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, './demo/index.html'));
 });
+
+app.use(express.static('demo'));
 
 app.listen(3002, 'localhost', function(err) {
   if (err) {

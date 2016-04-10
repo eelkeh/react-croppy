@@ -14,6 +14,10 @@ export function isRetina() {
   return global.matchMedia('(-webkit-device-pixel-ratio: 2)').matches;
 }
 
+export function getPixelRatio() {
+  return window.devicePixelRatio || 1;
+}
+
 export function getOffset(elem) {
   // taken from the jquery source
   let rect = elem.getBoundingClientRect();

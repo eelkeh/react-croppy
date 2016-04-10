@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
 import Rect from './Rect';
-import {clip, isRetina, recursiveOffset, getOffset} from '../utils';
+import {clip, recursiveOffset, getOffset, getPixelRatio} from '../utils';
 
 export default class Cropper extends Component {
 
@@ -29,28 +29,19 @@ export default class Cropper extends Component {
 
   constructor(props) {
     super(props);
-    let [x, y, width, height] = this.props.start;
+    let [x, y, width, height] = props.start;
     this.state = {
       canvasWidth: 0,
       canvasHeight: 0,
-      x: x,
-      y: y,
-      width: width,
-      height: height,
+      x: x || 0,
+      y: y || 0,
+      width: width || 0,
+      height: height || 0,
       resizing: false,
       dragging: false,
-      isRetina: isRetina()
+      deltaHandler: {x: 0, y: 0},
+      pixelRatio: getPixelRatio()
     };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    // let [x, y, width, height] = this.sizeFromPercentage(nextProps.start);
-    // this.setState({
-    //   x,
-    //   y,
-    //   width,
-    //   height
-    // });
   }
 
   componentDidMount() {
@@ -58,6 +49,7 @@ export default class Cropper extends Component {
     let node = ReactDOM.findDOMNode(this);
     this.offsetLeft = node.offsetLeft;
     this.offsetTop = node.offsetTop;
+    this.node = node;
   }
 
   componentWillUnmount() {
@@ -73,22 +65,25 @@ export default class Cropper extends Component {
   teardownListeners() {
     window.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);
+    window.removeEventListener('resize', this.onWindowResize);
   }
 
   getPosition = (e) => {
-    let offset = getOffset(e.target);
+    let offset = getOffset(this.node);
     let x = e.pageX - offset.left;
     let y = e.pageY - offset.top;
     return {x, y};
   }
 
   posCollidesCrop = (pos) => {
+    // does the provided mouse position collide with the crop box
     let {x, y} = pos;
     return ((x >= this.state.x && x <= (this.state.x + this.state.width))
         && (y >= this.state.y && y <= (this.state.y + this.state.height)));
   }
 
   posCollidesResizeHandler = (pos) => {
+    // does the provided mouse position collide with the resize handler
     let {handlerSize} = this.props;
     let {x, y} = pos;
     let handlerX = this.state.x + this.state.width - handlerSize;
@@ -98,11 +93,12 @@ export default class Cropper extends Component {
   }
 
   cropIsActive = () => {
+    // is there currently an active cropbox?
     return this.state.width && this.state.height;
   }
 
   getDelta = (pos) => {
-    let {handlerSize} = this.props;
+    // diff between mouse position and left/top position of crop box
     return {
       x: pos.x - this.state.x,
       y: pos.y - this.state.y
@@ -122,17 +118,25 @@ export default class Cropper extends Component {
         ...pos,
         width: 0,
         height: 0,
-        resizing: true
+        resizing: true,
+        startX: pos.x,
+        startY: pos.y
       });
     } else {
+
+      let delta = this.getDelta(pos);
+      let {width, height} = this.state;
+
       if (this.posCollidesResizeHandler(pos)) {
         this.setState({
           resizing: true,
+          // calc distance between left bottom corner and mouse pos
+          deltaHandler: {x: width - delta.x, y: height - delta.y}
         });
       } else {
         this.setState({
           dragging: true,
-          delta: this.getDelta(pos)
+          delta
         });
       }
     }
@@ -158,10 +162,17 @@ export default class Cropper extends Component {
       return;
     }
     e.preventDefault();
+
     let {x, y} = this.getPosition(e);
+
+    console.log(
+      x,y
+    );
+
     let ratio = this.getRatio();
     let {width, height, containerWidth, containerHeight, delta} = this.state;
     let newState = {};
+
     if (this.state.dragging) {
       newState = {
         x: clip(x - delta.x, 0, containerWidth - width),
@@ -169,24 +180,23 @@ export default class Cropper extends Component {
         width,
         height
       };
-    }
-    else if (this.state.resizing) {
+    } else if (this.state.resizing) {
       width = x - this.state.x;
       height = y - this.state.y;
-      if (width <= 0 || height <= 0) {
-        return;
-      }
+
       newState = {
-        x: this.state.x, 
+        x: this.state.x,
         y: this.state.y,
         ...this.onResize({
-          width: clip(width, 0, containerWidth - this.state.x),
-          height: clip(height, 0, containerWidth - this.state.y)
+          width: clip(width + this.state.deltaHandler.x, 1, containerWidth - this.state.x),
+          height: clip(height + this.state.deltaHandler.y , 1, containerHeight - this.state.y)
         })
       }
     }
     if (this.props.onCrop) {
-      this.props.onCrop(Object.assign({}, this.toNativeMetrics(newState)));
+      this.props.onCrop(
+        this.toNativeMetrics(newState)
+      );
     }
     this.setState(newState);
   }
@@ -196,7 +206,9 @@ export default class Cropper extends Component {
   }
 
   toNativeMetrics({x, y, width, height}) {
+    // convert current in dom dimensions to sizes of the image object
     let ratio = this.getRatio();
+    let delta = this.state.deltaHandler;
     return {
       width: width * ratio,
       height: height * ratio,
@@ -220,22 +232,10 @@ export default class Cropper extends Component {
       dragging: false
     });
 
-    if (this.props.onCropEnd) {
+    if (width && height && this.props.onCropEnd) {
       this.props.onCropEnd(data);
     }
 
-  }
-
-  sizeFromPercentage = (start) => {
-    let [x, y, width, height] = start;
-    const {containerWidth, containerHeight} = this.state;
-    if (x <= 1 && y <= 1 && width <= 1 && height <= 1) {
-      x = x * containerWidth;
-      y = y * containerHeight;
-      width = width * containerWidth;
-      height = height * containerHeight;
-    }
-    return [x, y, width, height];
   }
 
   onWindowResize = () => {
@@ -255,7 +255,6 @@ export default class Cropper extends Component {
   }
 
   computeSize = () => {
-    let {isRetina, x, y, width, height} = this.state;
     let imgNode = this.getImageNode();
     let domSize = this.imageDomSize();
     this.domSize = domSize;
@@ -266,22 +265,11 @@ export default class Cropper extends Component {
       height: imgNode.naturalHeight
     };
 
-    if (x <= 1 && y <= 1 && width <= 1 && height <= 1) {
-      x = x * domSize.width;
-      y = y * domSize.height;
-      width = width * domSize.width;
-      height = height * domSize.height;
-    }
-
     this.setState({
       containerWidth: domSize.width,
       containerHeight: domSize.height,
       canvasWidth: domSize.width,
       canvasHeight: domSize.height,
-      x,
-      y,
-      width,
-      height
     });
   }
 
@@ -290,13 +278,14 @@ export default class Cropper extends Component {
     return (
       <div
         onDrag={this.onDrag}
+        onMouseDown={this.onMouseDown}
+
         style={{
           position: 'relative',
           height: 0,
           paddingBottom: (canvasHeight / canvasWidth) * 100 + '%',
           ...this.props.style
         }}
-        onMouseDown={this.onMouseDown}
         >
         {this.props.children}
         <div
@@ -315,7 +304,7 @@ export default class Cropper extends Component {
             y={this.state.y}
             borderColor={this.props.borderColor}
             handlerSize={this.props.handlerSize}
-            isRetina={this.state.isRetina}
+            pixelRatio={this.state.pixelRatio}
           />
         </div>
         <img

@@ -9,7 +9,7 @@ export default class Rect extends Component {
     canvasHeight: PropTypes.number.isRequired,
     handlerSize: PropTypes.number.isRequired,
     borderColor: PropTypes.string.isRequired,
-    isRetina: PropTypes.bool.isRequired
+    pixelRatio: PropTypes.number.isRequired,
   };
 
   constructor(props) {
@@ -17,10 +17,10 @@ export default class Rect extends Component {
   }
 
   paint = (coords) => {
-    let {handlerSize} = this.props;
-    if (this.props.isRetina) {
-      coords = multiply(coords, 2);
-      handlerSize = handlerSize * 2;
+    let {handlerSize, pixelRatio} = this.props;
+    if (pixelRatio > 1) {
+      coords = multiply(coords, pixelRatio);
+      handlerSize = handlerSize * pixelRatio;
     }
     let {x, y, width, height} = coords;
     let {canvasWidth, canvasHeight} = this.props;
@@ -59,20 +59,17 @@ export default class Rect extends Component {
   }
 
   render() {
-    let {canvasWidth, canvasHeight, isRetina} = this.props;
-    let props = {};
-    if (isRetina) {
+    let {canvasWidth, canvasHeight, pixelRatio} = this.props;
+    let props = {
+      width: canvasWidth * pixelRatio,
+      height: canvasHeight * pixelRatio
+    };
+    if (pixelRatio > 1) {
       props.style = {
         width: canvasWidth,
         height: canvasHeight
       }
     }
-    return (
-      <canvas
-        {...props}
-        width={isRetina ? canvasWidth * 2 : canvasWidth}
-        height={isRetina ? canvasHeight * 2 : canvasHeight}
-      />
-    );
+    return <canvas {...props} />;
   }
 }

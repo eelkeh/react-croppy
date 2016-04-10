@@ -4,6 +4,7 @@ exports.__esModule = true;
 exports.clip = clip;
 exports.multiply = multiply;
 exports.isRetina = isRetina;
+exports.getPixelRatio = getPixelRatio;
 exports.getOffset = getOffset;
 function clip(n, min, max) {
   return Math.min(Math.max(n, min), max);
@@ -18,6 +19,10 @@ function multiply(obj, n) {
 
 function isRetina() {
   return global.matchMedia('(-webkit-device-pixel-ratio: 2)').matches;
+}
+
+function getPixelRatio() {
+  return window.devicePixelRatio || 1;
 }
 
 function getOffset(elem) {
