@@ -229,6 +229,7 @@
 	            { style: introStyle },
 	            'A fully responsive zero-dependency image cropper'
 	          ),
+	          _react2.default.createElement('img', { src: 'https://img.shields.io/npm/v/react-croppy.svg?maxAge=2592000&style=flat-square' }),
 	          _react2.default.createElement(
 	            'h3',
 	            { style: h3Style },
