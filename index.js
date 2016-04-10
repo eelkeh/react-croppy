@@ -2,13 +2,13 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import Cropper from '../src/components/Cropper';
 
-var inputStyle = {
+let inputStyle = {
   width: '100%',
   //color: '#FF4136',
   color: 'rgba(0, 0, 0, 0.7)',
-  fontSize: '16px',
+  fontSize: 16,
   border: 'none',
-  padding: '16px',
+  padding: 16,
   margin: 0,
   width: '70%',
   outline: 'none',
@@ -16,17 +16,40 @@ var inputStyle = {
   boxShadow: 'inset 0 0 1px rgba(0,0,0,0.2)',
 }
 
-var labelStyle = {
+let labelStyle = {
   display: 'block',
-  fontSize: '16px',
+  fontSize: 16,
   color: 'rgba(0, 0, 0, 0.4)',
   margin: '12px 0 6px 0'
 }
 
-var statStyle = {
-  fontSize: '16px',
+let statStyle = {
+  fontSize: 16,
   color: '#F012BE',
   fontWeight: 500
+}
+
+let h1Style = {
+  fontSize: 31,
+  fontWeight: 700,
+  // color: '#B50366',
+  color: '#333',
+  marginTop: '1em',
+  marginBottom: '.3em',
+}
+
+let h3Style = {
+  fontSize: 20,
+  fontWeight: 300,
+  color: '#444',
+  // color: '#333',
+  margin: '1em 0',
+}
+
+let introStyle = {
+  fontSize: 20,
+  marginBottom: '1em',
+  color: 'rgba(0,0,0,.5)',
 }
 
 const Input = (props) => (
@@ -38,6 +61,10 @@ const Input = (props) => (
       style={inputStyle}
       placeholder={props.label}/>
   </div>
+);
+
+const Code = ({children}) => (
+  <span style={{background: '#f5f2f0', padding: 3, fontWeight: 500}}>{children}</span>
 );
 
 class Demo extends Component {
@@ -63,6 +90,29 @@ class Demo extends Component {
     });
   }
 
+  onCropEnd = crop => {
+    this.updateCropInfo(crop);
+    console.debug('%cCROP END', 'color: green');
+    console.debug(crop);
+  }
+
+  genCodeSample() {
+    return `<Cropper
+      src="https://i.imgur.com/2Byd6ef.jpg"
+      borderColor="#FO12BE"
+      aspectRatio={16/9}
+      onCropEnd={crop => console.debug(crop)}\n/>`.replace(/ {2,}/g,'  ');
+  }
+
+  genResult() {
+    let {x, y, width, height} = this.state;
+    return `{
+      width: ${Math.round(width)},
+      height: ${Math.round(height)},
+      x: ${Math.round(x)},
+      y: ${Math.round(y)},\n}`.replace(/ {2,}/g,'  ');
+  }
+
   render() {
     let {
       color,
@@ -71,54 +121,61 @@ class Demo extends Component {
     return (
       <div style={{
         margin: 'auto',
-        maxWidth: '900px'
+        maxWidth: '700px',
       }}>
-        <div style={{
-          boxSizing: 'border-box',
-          width: '50%', 
-          float: 'left'
-        }}>
+        <div>
+          <h1 style={h1Style}>React Croppy</h1>
+          <p style={introStyle}>
+           A fully responsive zero-dependency image cropper
+          </p>
+
+          <h3 style={h3Style}>
+            Install instructions
+          </h3>
+          <pre>
+            <code className="language-shell">npm install react-croppy</code>
+          </pre>
+
+          <h3 style={h3Style}>
+            Include in your project
+          </h3>
+          <pre>
+            <code className="language-js">import Cropper from react-croppy</code>
+          </pre>
+
+          <h3 style={h3Style}>
+            Demo
+          </h3>
+          <div style={{display: 'flex'}}>
+            <pre style={{flexBasis: '70%' }}>
+              <code className="language-jsx">{this.genCodeSample()}</code>
+            </pre>
+            <pre style={{flexBasis: '30%', marginLeft: '.5em' }}>
+              <code className="language-js">{this.genResult()}</code>
+            </pre>
+          </div>
+
           <Cropper
             onCrop={this.updateCropInfo}
-            onCropEnd={this.updateCropInfo}
-            style={{maxWith: '100%'}}
-            src='http://i.imgur.com/2Byd6ef.jpg'
+            onCropEnd={this.onCropEnd}
+            src='https://i.imgur.com/2Byd6ef.jpg'
             borderColor={color}
-            start={[10, 10, 100, 100]}
-            aspectRatio={aspectRatio}/>
+            start={[100, 100, 320, 180]}
+          />
+
+          <h3 style={h3Style}>
+            API
+          </h3>
+          <ul style={{listStyle: 'circle inside'}}>
+            <li><Code>src: string</Code> is the source of the image</li>
+            <li><Code>borderColor: string</Code> is the CSS color of the border of the crop rectangle</li>
+            <li><Code>aspectRatio: decimal</Code> optional aspect ratio (width / height) that will be enforced for the crop</li>
+            <li><Code>onCrop()</Code> is a callback that's called on every crop</li>
+            <li><Code>onCropStart(crop)</Code> is a callback that's called when the crop starts</li>
+            <li><Code>onCropEnd(crop)</Code> is a callback that's called when the crop ends</li>
+          </ul>
         </div>
 
-        <div style={{
-          boxSizing: 'border-box',
-          width: '50%', 
-          float: 'right', 
-          paddingLeft: '16px'
-        }}>
-          <Input
-            label="Color"
-            value={this.state.color}
-            onChange={e => this.handleChange('color', e)}
-            />
-          <Input
-            label="Aspect Ratio"
-            value={this.state.aspectRatio}
-            onChange={e => this.handleChange('aspectRatio', e)}
-            />
-          <div>
-            <div style={statStyle}>
-              width: {Math.round(this.state.width)}
-            </div>
-            <div style={statStyle}>
-              height: {Math.round(this.state.height)}
-            </div>
-            <div style={statStyle}>
-              x: {Math.round(this.state.x)}
-            </div>
-            <div style={statStyle}>
-              y: {Math.round(this.state.y)}
-            </div>
-          </div>
-        </div>
       </div>
     )
   }
