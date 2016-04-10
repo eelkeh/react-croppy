@@ -1,12 +1,9 @@
 var path = require('path');
 var webpack = require('webpack');
+var env = process.env.NODE_ENV;
 
-module.exports = {
-  //debug: true,
-  devtool: 'eval',
+var config = {
   entry: [
-    'eventsource-polyfill',
-    'webpack-hot-middleware/client',
     './demo/index'
   ],
   output: {
@@ -15,8 +12,8 @@ module.exports = {
     publicPath: '/'
   },
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin()
+    // new webpack.HotModuleReplacementPlugin(),
+    // new webpack.NoErrorsPlugin()
   ],
   resolve: {
     modulesDirectories: ['node_modules'],
@@ -37,4 +34,8 @@ module.exports = {
   }
 };
 
+if (env !== 'production') {
+  // etc.
+}
 
+module.exports = config;
