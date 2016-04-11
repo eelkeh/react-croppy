@@ -69,6 +69,13 @@ const Code = ({children}) => (
   </span>
 );
 
+let initPos = [
+  956,
+  475,
+  576,
+  324
+];
+
 class Demo extends Component {
 
   constructor(props) {
@@ -76,7 +83,10 @@ class Demo extends Component {
     this.state = {
       color: '#FFDC00',
       aspectRatio: 16/9,
-      crop: {}
+      x: initPos[0],
+      y: initPos[1],
+      width: initPos[2],
+      height: initPos[3],
     }
   }
 
@@ -109,10 +119,10 @@ class Demo extends Component {
   genResult() {
     let {x, y, width, height} = this.state;
     return `{
-      width: ${Math.round(width)},
-      height: ${Math.round(height)},
       x: ${Math.round(x)},
-      y: ${Math.round(y)},\n}`.replace(/ {2,}/g,'  ');
+      y: ${Math.round(y)},
+      width: ${Math.round(width)},
+      height: ${Math.round(height)},\n}`.replace(/ {2,}/g,'  ');
   }
 
   render() {
@@ -144,7 +154,7 @@ class Demo extends Component {
             Include in your project
           </h3>
           <pre>
-            <code className="language-js">import Cropper from react-croppy</code>
+            <code className="language-js">import Cropper from 'react-croppy'</code>
           </pre>
 
           <h3 style={h3Style}>
@@ -163,8 +173,9 @@ class Demo extends Component {
             onCrop={this.updateCropInfo}
             onCropEnd={this.onCropEnd}
             src='https://i.imgur.com/NLaazNo.jpg'
+            aspectRatio={16/9}
             borderColor={color}
-            start={[350, 160, 160, 110]}
+            start={initPos}
           />
 
           <h3 style={h3Style}>
@@ -173,10 +184,11 @@ class Demo extends Component {
           <ul style={{listStyle: 'circle inside'}}>
             <li><Code>src: string</Code> is the source of the image</li>
             <li><Code>borderColor: string</Code> is the CSS color of the border of the crop rectangle</li>
-            <li><Code>aspectRatio: number</Code> optional aspect ratio (width / height) that will be enforced for the crop</li>
+            <li><Code>aspectRatio: number</Code> optional aspect ratio (width / height) that will be enforced for the crops dimensions</li>
             <li><Code>onCrop()</Code> is a callback that's called on every crop</li>
             <li><Code>onCropStart(crop)</Code> is a callback that's called when the crop starts</li>
             <li><Code>onCropEnd(crop)</Code> is a callback that's called when the crop ends</li>
+            <li><Code>start: [x, y, width, height]</Code>optional, the starting position and size of the crop</li>
           </ul>
         </div>
 

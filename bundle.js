@@ -154,6 +154,8 @@
 	  );
 	};
 
+	var initPos = [956, 475, 576, 324];
+
 	var Demo = function (_Component) {
 	  _inherits(Demo, _Component);
 
@@ -175,7 +177,10 @@
 	    _this.state = {
 	      color: '#FFDC00',
 	      aspectRatio: 16 / 9,
-	      crop: {}
+	      x: initPos[0],
+	      y: initPos[1],
+	      width: initPos[2],
+	      height: initPos[3]
 	    };
 	    return _this;
 	  }
@@ -201,7 +206,7 @@
 	      var width = _state.width;
 	      var height = _state.height;
 
-	      return ('{\n      width: ' + Math.round(width) + ',\n      height: ' + Math.round(height) + ',\n      x: ' + Math.round(x) + ',\n      y: ' + Math.round(y) + ',\n}').replace(/ {2,}/g, '  ');
+	      return ('{\n      x: ' + Math.round(x) + ',\n      y: ' + Math.round(y) + ',\n      width: ' + Math.round(width) + ',\n      height: ' + Math.round(height) + ',\n}').replace(/ {2,}/g, '  ');
 	    }
 	  }, {
 	    key: 'render',
@@ -255,7 +260,7 @@
 	            _react2.default.createElement(
 	              'code',
 	              { className: 'language-js' },
-	              'import Cropper from react-croppy'
+	              'import Cropper from \'react-croppy\''
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -289,8 +294,9 @@
 	            onCrop: this.updateCropInfo,
 	            onCropEnd: this.onCropEnd,
 	            src: 'https://i.imgur.com/NLaazNo.jpg',
+	            aspectRatio: 16 / 9,
 	            borderColor: color,
-	            start: [350, 160, 160, 110]
+	            start: initPos
 	          }),
 	          _react2.default.createElement(
 	            'h3',
@@ -328,7 +334,7 @@
 	                null,
 	                'aspectRatio: number'
 	              ),
-	              ' optional aspect ratio (width / height) that will be enforced for the crop'
+	              ' optional aspect ratio (width / height) that will be enforced for the crops dimensions'
 	            ),
 	            _react2.default.createElement(
 	              'li',
@@ -359,6 +365,16 @@
 	                'onCropEnd(crop)'
 	              ),
 	              ' is a callback that\'s called when the crop ends'
+	            ),
+	            _react2.default.createElement(
+	              'li',
+	              null,
+	              _react2.default.createElement(
+	                Code,
+	                null,
+	                'start: [x, y, width, height]'
+	              ),
+	              'optional, the starting position and size of the crop'
 	            )
 	          )
 	        )
@@ -19961,9 +19977,9 @@
 	  value: true
 	});
 
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -19997,22 +20013,236 @@
 
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Cropper).call(this, props));
 
-	    _initialiseProps.call(_this);
+	    _this.getPosition = function (e) {
+	      var offset = (0, _utils.getOffset)(_this.node);
+	      var x = e.pageX - offset.left;
+	      var y = e.pageY - offset.top;
+	      return { x: x, y: y };
+	    };
 
-	    var _props$start = _slicedToArray(props.start, 4);
+	    _this.posCollidesCrop = function (pos) {
+	      // does the provided mouse position collide with the crop box
+	      var x = pos.x;
+	      var y = pos.y;
 
-	    var x = _props$start[0];
-	    var y = _props$start[1];
-	    var width = _props$start[2];
-	    var height = _props$start[3];
+	      return x >= _this.state.x && x <= _this.state.x + _this.state.width && y >= _this.state.y && y <= _this.state.y + _this.state.height;
+	    };
+
+	    _this.posCollidesResizeHandler = function (pos) {
+	      // does the provided mouse position collide with the resize handler
+	      var handlerSize = _this.props.handlerSize;
+	      var x = pos.x;
+	      var y = pos.y;
+
+	      var handlerX = _this.state.x + _this.state.width - handlerSize;
+	      var handlerY = _this.state.y + _this.state.height - handlerSize;
+	      return x >= handlerX && x <= handlerX + handlerSize && y >= handlerY && y <= handlerY + handlerSize;
+	    };
+
+	    _this.cropIsActive = function () {
+	      // is there currently an active cropbox?
+	      return _this.state.width && _this.state.height;
+	    };
+
+	    _this.getDelta = function (pos) {
+	      // diff between mouse position and left/top position of crop box
+	      return {
+	        x: pos.x - _this.state.x,
+	        y: pos.y - _this.state.y
+	      };
+	    };
+
+	    _this.onMouseDown = function (e) {
+	      e.preventDefault();
+
+	      var pos = _this.getPosition(e);
+	      var isActive = _this.cropIsActive();
+	      var collides = _this.posCollidesCrop(pos);
+
+	      if (!isActive || !collides) {
+	        // reset starting position
+	        _this.setState(_extends({}, pos, {
+	          width: 0,
+	          height: 0,
+	          resizing: true,
+	          startX: pos.x,
+	          startY: pos.y
+	        }));
+	      } else {
+
+	        var delta = _this.getDelta(pos);
+	        var _this$state = _this.state;
+	        var width = _this$state.width;
+	        var height = _this$state.height;
+
+
+	        if (_this.posCollidesResizeHandler(pos)) {
+	          _this.setState({
+	            resizing: true,
+	            // calc distance between left bottom corner and mouse pos
+	            deltaHandler: { x: width - delta.x, y: height - delta.y }
+	          });
+	        } else {
+	          _this.setState({
+	            dragging: true,
+	            delta: delta
+	          });
+	        }
+	      }
+	    };
+
+	    _this.onResize = function (_ref) {
+	      var width = _ref.width;
+	      var height = _ref.height;
+	      var _this$props = _this.props;
+	      var aspectRatio = _this$props.aspectRatio;
+	      var minCropWidth = _this$props.minCropWidth;
+	      var minCropHeight = _this$props.minCropHeight;
+
+	      if (minCropWidth) {
+	        width = Math.max(minCropWidth, _this.getRatio() * width);
+	      }
+	      if (minCropHeight) {
+	        height = Math.max(minCropHeight, _this.getRatio() * height);
+	      }
+	      if (aspectRatio) {
+	        height = width / aspectRatio;
+	      }
+	      return { width: width, height: height };
+	    };
+
+	    _this.onMouseMove = function (e) {
+	      if (!_this.state.dragging && !_this.state.resizing) {
+	        return;
+	      }
+	      e.preventDefault();
+
+	      var _this$getPosition = _this.getPosition(e);
+
+	      var x = _this$getPosition.x;
+	      var y = _this$getPosition.y;
+
+	      var ratio = _this.getRatio();
+	      var _this$state2 = _this.state;
+	      var width = _this$state2.width;
+	      var height = _this$state2.height;
+	      var delta = _this$state2.delta;
+	      var domWidth = _this$state2.domWidth;
+	      var domHeight = _this$state2.domHeight;
+
+	      var newState = {};
+
+	      if (_this.state.dragging) {
+	        newState = {
+	          x: (0, _utils.clip)(x - delta.x, 0, domWidth - width),
+	          y: (0, _utils.clip)(y - delta.y, 0, domHeight - height),
+	          width: width,
+	          height: height
+	        };
+	      } else if (_this.state.resizing) {
+	        width = x - _this.state.x;
+	        height = y - _this.state.y;
+
+	        newState = _extends({
+	          x: _this.state.x,
+	          y: _this.state.y
+	        }, _this.onResize({
+	          width: (0, _utils.clip)(width + _this.state.deltaHandler.x, 1, domWidth - _this.state.x),
+	          height: (0, _utils.clip)(height + _this.state.deltaHandler.y, 1, domHeight - _this.state.y)
+	        }));
+	      }
+	      if (_this.props.onCrop) {
+	        _this.props.onCrop(_this.toNativeMetrics(newState));
+	      }
+	      _this.setState(newState);
+	    };
+
+	    _this.onMouseUp = function () {
+	      if (!_this.state.dragging && !_this.state.resizing) {
+	        return;
+	      }
+	      var _this$state3 = _this.state;
+	      var x = _this$state3.x;
+	      var y = _this$state3.y;
+	      var width = _this$state3.width;
+	      var height = _this$state3.height;
+
+	      var data = _extends({
+	        nativeSize: _this.image.nativeSize
+	      }, _this.toNativeMetrics({ x: x, y: y, width: width, height: height }));
+
+	      _this.setState({
+	        resizing: false,
+	        dragging: false
+	      });
+
+	      if (width && height && _this.props.onCropEnd) {
+	        _this.props.onCropEnd(data);
+	      }
+	    };
+
+	    _this.onWindowResize = function () {
+	      _this.computeDOMSizes();
+	    };
+
+	    _this.onImageLoad = function () {
+	      var imgNode = _this.getImageNode();
+	      _this.node = imgNode;
+	      var domSize = _this.imageDomSize();
+
+	      _this.image = _this.image || {};
+	      _this.image.nativeSize = {
+	        width: imgNode.naturalWidth,
+	        height: imgNode.naturalHeight
+	      };
+
+	      var update = {
+	        domWidth: domSize.width,
+	        domHeight: domSize.height
+	      };
+
+	      if (_this.props.start) {
+	        var aspectRatio = _this.props.aspectRatio;
+
+	        var _this$props$start = _slicedToArray(_this.props.start, 4);
+
+	        var x = _this$props$start[0];
+	        var y = _this$props$start[1];
+	        var width = _this$props$start[2];
+	        var height = _this$props$start[3];
+
+	        var ratio = domSize.width / _this.image.nativeSize.width;
+	        if (aspectRatio) {
+	          height = width / aspectRatio;
+	        }
+	        Object.assign(update, {
+	          x: x * ratio,
+	          y: y * ratio,
+	          width: width * ratio,
+	          height: height * ratio
+	        });
+	      }
+	      _this.setState(update);
+	    };
+
+	    _this.computeDOMSizes = function () {
+	      // size of the image cropper in the DOM
+	      var domSize = _this.imageDomSize();
+	      var update = {
+	        domWidth: domSize.width,
+	        domHeight: domSize.height
+	      };
+	      _this.setState(update);
+	      return update;
+	    };
 
 	    _this.state = {
-	      canvasWidth: 0,
-	      canvasHeight: 0,
-	      x: x || 0,
-	      y: y || 0,
-	      width: width || 0,
-	      height: height || 0,
+	      x: 0,
+	      y: 0,
+	      width: 0,
+	      height: 0,
+	      domHeight: 0,
+	      domWidth: 0,
 	      resizing: false,
 	      dragging: false,
 	      deltaHandler: { x: 0, y: 0 },
@@ -20025,10 +20255,7 @@
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      this.setupListeners();
-	      var node = _reactDom2.default.findDOMNode(this);
-	      this.offsetLeft = node.offsetLeft;
-	      this.offsetTop = node.offsetTop;
-	      this.node = node;
+	      this.computeDOMSizes();
 	    }
 	  }, {
 	    key: 'componentWillUnmount',
@@ -20052,15 +20279,15 @@
 	  }, {
 	    key: 'getRatio',
 	    value: function getRatio() {
-	      return this.image.nativeSize.width / this.state.containerWidth;
+	      return this.image.nativeSize.width / this.state.domWidth;
 	    }
 	  }, {
 	    key: 'toNativeMetrics',
-	    value: function toNativeMetrics(_ref) {
-	      var x = _ref.x;
-	      var y = _ref.y;
-	      var width = _ref.width;
-	      var height = _ref.height;
+	    value: function toNativeMetrics(_ref2) {
+	      var x = _ref2.x;
+	      var y = _ref2.y;
+	      var width = _ref2.width;
+	      var height = _ref2.height;
 
 	      // convert current in dom dimensions to sizes of the image object
 	      var ratio = this.getRatio();
@@ -20089,10 +20316,8 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var _state = this.state;
-	      var canvasWidth = _state.canvasWidth;
-	      var canvasHeight = _state.canvasHeight;
-
+	      var containerWidth = this.state.domWidth;
+	      var containerHeight = this.state.domHeight;
 	      return _react2.default.createElement(
 	        'div',
 	        {
@@ -20102,7 +20327,7 @@
 	          style: _extends({
 	            position: 'relative',
 	            height: 0,
-	            paddingBottom: canvasHeight / canvasWidth * 100 + '%'
+	            paddingBottom: containerHeight / containerWidth * 100 + '%'
 	          }, this.props.style)
 	        },
 	        this.props.children,
@@ -20116,8 +20341,8 @@
 	              zIndex: 1
 	            } },
 	          _react2.default.createElement(_Rect2.default, {
-	            canvasWidth: this.state.canvasWidth,
-	            canvasHeight: this.state.canvasHeight,
+	            canvasWidth: containerWidth,
+	            canvasHeight: containerHeight,
 	            width: this.state.width,
 	            height: this.state.height,
 	            x: this.state.x,
@@ -20129,7 +20354,7 @@
 	        ),
 	        _react2.default.createElement('img', {
 	          ref: 'image',
-	          onLoad: this.computeSize,
+	          onLoad: this.onImageLoad,
 	          style: {
 	            position: 'absolute',
 	            top: 0,
@@ -20150,6 +20375,7 @@
 	  minCropWidth: _react.PropTypes.number,
 	  maxCropWidth: _react.PropTypes.number,
 	  borderColor: _react.PropTypes.string,
+	  aspectRatio: _react.PropTypes.number,
 	  style: _react.PropTypes.object,
 	  start: _react.PropTypes.array,
 	  startChange: _react.PropTypes.bool,
@@ -20162,208 +20388,9 @@
 	  minCropHeight: 0,
 	  borderColor: '#FF4136', // red
 	  handlerSize: 20,
-	  start: [null, null, null, null],
+	  start: null,
 	  style: {}
 	};
-
-	var _initialiseProps = function _initialiseProps() {
-	  var _this2 = this;
-
-	  this.getPosition = function (e) {
-	    var offset = (0, _utils.getOffset)(_this2.node);
-	    var x = e.pageX - offset.left;
-	    var y = e.pageY - offset.top;
-	    return { x: x, y: y };
-	  };
-
-	  this.posCollidesCrop = function (pos) {
-	    // does the provided mouse position collide with the crop box
-	    var x = pos.x;
-	    var y = pos.y;
-
-	    return x >= _this2.state.x && x <= _this2.state.x + _this2.state.width && y >= _this2.state.y && y <= _this2.state.y + _this2.state.height;
-	  };
-
-	  this.posCollidesResizeHandler = function (pos) {
-	    // does the provided mouse position collide with the resize handler
-	    var handlerSize = _this2.props.handlerSize;
-	    var x = pos.x;
-	    var y = pos.y;
-
-	    var handlerX = _this2.state.x + _this2.state.width - handlerSize;
-	    var handlerY = _this2.state.y + _this2.state.height - handlerSize;
-	    return x >= handlerX && x <= handlerX + handlerSize && y >= handlerY && y <= handlerY + handlerSize;
-	  };
-
-	  this.cropIsActive = function () {
-	    // is there currently an active cropbox?
-	    return _this2.state.width && _this2.state.height;
-	  };
-
-	  this.getDelta = function (pos) {
-	    // diff between mouse position and left/top position of crop box
-	    return {
-	      x: pos.x - _this2.state.x,
-	      y: pos.y - _this2.state.y
-	    };
-	  };
-
-	  this.onMouseDown = function (e) {
-	    e.preventDefault();
-
-	    var pos = _this2.getPosition(e);
-	    var isActive = _this2.cropIsActive();
-	    var collides = _this2.posCollidesCrop(pos);
-
-	    if (!isActive || !collides) {
-	      // reset starting position
-	      _this2.setState(_extends({}, pos, {
-	        width: 0,
-	        height: 0,
-	        resizing: true,
-	        startX: pos.x,
-	        startY: pos.y
-	      }));
-	    } else {
-
-	      var delta = _this2.getDelta(pos);
-	      var _state2 = _this2.state;
-	      var width = _state2.width;
-	      var height = _state2.height;
-
-
-	      if (_this2.posCollidesResizeHandler(pos)) {
-	        _this2.setState({
-	          resizing: true,
-	          // calc distance between left bottom corner and mouse pos
-	          deltaHandler: { x: width - delta.x, y: height - delta.y }
-	        });
-	      } else {
-	        _this2.setState({
-	          dragging: true,
-	          delta: delta
-	        });
-	      }
-	    }
-	  };
-
-	  this.onResize = function (_ref2) {
-	    var width = _ref2.width;
-	    var height = _ref2.height;
-	    var _props = _this2.props;
-	    var aspectRatio = _props.aspectRatio;
-	    var minCropWidth = _props.minCropWidth;
-	    var minCropHeight = _props.minCropHeight;
-
-	    if (minCropWidth) {
-	      width = Math.max(minCropWidth, _this2.getRatio() * width);
-	    }
-	    if (minCropHeight) {
-	      height = Math.max(minCropHeight, _this2.getRatio() * height);
-	    }
-	    if (aspectRatio) {
-	      height = width / aspectRatio;
-	    }
-	    return { width: width, height: height };
-	  };
-
-	  this.onMouseMove = function (e) {
-	    if (!_this2.state.dragging && !_this2.state.resizing) {
-	      return;
-	    }
-	    e.preventDefault();
-
-	    var _getPosition = _this2.getPosition(e);
-
-	    var x = _getPosition.x;
-	    var y = _getPosition.y;
-
-
-	    console.log(x, y);
-
-	    var ratio = _this2.getRatio();
-	    var _state3 = _this2.state;
-	    var width = _state3.width;
-	    var height = _state3.height;
-	    var containerWidth = _state3.containerWidth;
-	    var containerHeight = _state3.containerHeight;
-	    var delta = _state3.delta;
-
-	    var newState = {};
-
-	    if (_this2.state.dragging) {
-	      newState = {
-	        x: (0, _utils.clip)(x - delta.x, 0, containerWidth - width),
-	        y: (0, _utils.clip)(y - delta.y, 0, containerHeight - height),
-	        width: width,
-	        height: height
-	      };
-	    } else if (_this2.state.resizing) {
-	      width = x - _this2.state.x;
-	      height = y - _this2.state.y;
-
-	      newState = _extends({
-	        x: _this2.state.x,
-	        y: _this2.state.y
-	      }, _this2.onResize({
-	        width: (0, _utils.clip)(width + _this2.state.deltaHandler.x, 1, containerWidth - _this2.state.x),
-	        height: (0, _utils.clip)(height + _this2.state.deltaHandler.y, 1, containerHeight - _this2.state.y)
-	      }));
-	    }
-	    if (_this2.props.onCrop) {
-	      _this2.props.onCrop(_this2.toNativeMetrics(newState));
-	    }
-	    _this2.setState(newState);
-	  };
-
-	  this.onMouseUp = function () {
-	    if (!_this2.state.dragging && !_this2.state.resizing) {
-	      return;
-	    }
-	    var _state4 = _this2.state;
-	    var x = _state4.x;
-	    var y = _state4.y;
-	    var width = _state4.width;
-	    var height = _state4.height;
-
-	    var data = _extends({
-	      nativeSize: _this2.image.nativeSize
-	    }, _this2.toNativeMetrics({ x: x, y: y, width: width, height: height }));
-
-	    _this2.setState({
-	      resizing: false,
-	      dragging: false
-	    });
-
-	    if (width && height && _this2.props.onCropEnd) {
-	      _this2.props.onCropEnd(data);
-	    }
-	  };
-
-	  this.onWindowResize = function () {
-	    _this2.computeSize();
-	  };
-
-	  this.computeSize = function () {
-	    var imgNode = _this2.getImageNode();
-	    var domSize = _this2.imageDomSize();
-	    _this2.domSize = domSize;
-
-	    _this2.image = _this2.image || {};
-	    _this2.image.nativeSize = {
-	      width: imgNode.naturalWidth,
-	      height: imgNode.naturalHeight
-	    };
-
-	    _this2.setState({
-	      containerWidth: domSize.width,
-	      containerHeight: domSize.height,
-	      canvasWidth: domSize.width,
-	      canvasHeight: domSize.height
-	    });
-	  };
-	};
-
 	exports.default = Cropper;
 
 /***/ },
