@@ -10,6 +10,7 @@ export default class Cropper extends Component {
     minCropWidth: PropTypes.number,
     maxCropWidth: PropTypes.number,
     borderColor: PropTypes.string,
+    aspectRatio: PropTypes.number,
     style: PropTypes.object,
     start: PropTypes.array,
     startChange: PropTypes.bool,
@@ -23,20 +24,19 @@ export default class Cropper extends Component {
     minCropHeight: 0,
     borderColor: '#FF4136', // red
     handlerSize: 20,
-    start: [null, null, null, null],
+    start: null,
     style: {}
   }
 
   constructor(props) {
     super(props);
-    let [x, y, width, height] = props.start;
     this.state = {
-      canvasWidth: 0,
-      canvasHeight: 0,
-      x: x || 0,
-      y: y || 0,
-      width: width || 0,
-      height: height || 0,
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      domHeight: 0,
+      domWidth: 0,
       resizing: false,
       dragging: false,
       deltaHandler: {x: 0, y: 0},
@@ -46,10 +46,7 @@ export default class Cropper extends Component {
 
   componentDidMount() {
     this.setupListeners();
-    let node = ReactDOM.findDOMNode(this);
-    this.offsetLeft = node.offsetLeft;
-    this.offsetTop = node.offsetTop;
-    this.node = node;
+    this.computeDOMSizes();
   }
 
   componentWillUnmount() {
@@ -164,19 +161,14 @@ export default class Cropper extends Component {
     e.preventDefault();
 
     let {x, y} = this.getPosition(e);
-
-    console.log(
-      x,y
-    );
-
     let ratio = this.getRatio();
-    let {width, height, containerWidth, containerHeight, delta} = this.state;
+    let {width, height, delta, domWidth, domHeight} = this.state;
     let newState = {};
 
     if (this.state.dragging) {
       newState = {
-        x: clip(x - delta.x, 0, containerWidth - width),
-        y: clip(y - delta.y, 0, containerHeight - height),
+        x: clip(x - delta.x, 0, domWidth - width),
+        y: clip(y - delta.y, 0, domHeight - height),
         width,
         height
       };
@@ -188,8 +180,8 @@ export default class Cropper extends Component {
         x: this.state.x,
         y: this.state.y,
         ...this.onResize({
-          width: clip(width + this.state.deltaHandler.x, 1, containerWidth - this.state.x),
-          height: clip(height + this.state.deltaHandler.y , 1, containerHeight - this.state.y)
+          width: clip(width + this.state.deltaHandler.x, 1, domWidth - this.state.x),
+          height: clip(height + this.state.deltaHandler.y , 1, domHeight - this.state.y)
         })
       }
     }
@@ -202,7 +194,7 @@ export default class Cropper extends Component {
   }
 
   getRatio() {
-    return this.image.nativeSize.width / this.state.containerWidth;
+    return this.image.nativeSize.width / this.state.domWidth;
   }
 
   toNativeMetrics({x, y, width, height}) {
@@ -239,7 +231,7 @@ export default class Cropper extends Component {
   }
 
   onWindowResize = () => {
-    this.computeSize();
+    this.computeDOMSizes();
   }
 
   getImageNode() {
@@ -254,10 +246,10 @@ export default class Cropper extends Component {
     return {width, height};
   }
 
-  computeSize = () => {
+  onImageLoad = () => {
     let imgNode = this.getImageNode();
+    this.node = imgNode;
     let domSize = this.imageDomSize();
-    this.domSize = domSize;
 
     this.image = this.image || {};
     this.image.nativeSize = {
@@ -265,16 +257,42 @@ export default class Cropper extends Component {
       height: imgNode.naturalHeight
     };
 
-    this.setState({
-      containerWidth: domSize.width,
-      containerHeight: domSize.height,
-      canvasWidth: domSize.width,
-      canvasHeight: domSize.height,
-    });
+    let update = {
+      domWidth: domSize.width,
+      domHeight: domSize.height
+    };
+
+    if (this.props.start) {
+      let {aspectRatio} = this.props;
+      let [x, y, width, height] = this.props.start;
+      let ratio = domSize.width / this.image.nativeSize.width;
+      if (aspectRatio) {
+        height = width / aspectRatio;
+      }
+      Object.assign(update, {
+        x: x * ratio,
+        y: y * ratio,
+        width: width * ratio,
+        height: height * ratio
+      });
+    }
+    this.setState(update);
+  }
+
+  computeDOMSizes = () => {
+    // size of the image cropper in the DOM
+    let domSize = this.imageDomSize();
+    let update = {
+      domWidth: domSize.width,
+      domHeight: domSize.height
+    }
+    this.setState(update);
+    return update;
   }
 
   render() {
-    const {canvasWidth, canvasHeight} = this.state;
+    const containerWidth = this.state.domWidth;
+    const containerHeight = this.state.domHeight;
     return (
       <div
         onDrag={this.onDrag}
@@ -283,7 +301,7 @@ export default class Cropper extends Component {
         style={{
           position: 'relative',
           height: 0,
-          paddingBottom: (canvasHeight / canvasWidth) * 100 + '%',
+          paddingBottom: (containerHeight / containerWidth) * 100 + '%',
           ...this.props.style
         }}
         >
@@ -296,8 +314,8 @@ export default class Cropper extends Component {
             zIndex: 1
           }}>
           <Rect
-            canvasWidth={this.state.canvasWidth}
-            canvasHeight={this.state.canvasHeight}
+            canvasWidth={containerWidth}
+            canvasHeight={containerHeight}
             width={this.state.width}
             height={this.state.height}
             x={this.state.x}
@@ -309,7 +327,7 @@ export default class Cropper extends Component {
         </div>
         <img
           ref='image'
-          onLoad={this.computeSize}
+          onLoad={this.onImageLoad}
           style={{
             position: 'absolute', 
             top: 0, 
