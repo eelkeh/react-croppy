@@ -190,7 +190,7 @@
 	  }, {
 	    key: 'genCodeSample',
 	    value: function genCodeSample() {
-	      return '<Cropper\n      src="https://i.imgur.com/2Byd6ef.jpg"\n      borderColor="#FO12BE"\n      aspectRatio={16/9}\n      onCropEnd={crop => console.debug(crop)}\n/>'.replace(/ {2,}/g, '  ');
+	      return '<Cropper\n      src="http://i.imgur.com/NLaazNo.jpg"\n      borderColor="#FO12BE"\n      aspectRatio={16/9}\n      onCropEnd={crop => console.debug(crop)}\n/>'.replace(/ {2,}/g, '  ');
 	    }
 	  }, {
 	    key: 'genResult',
@@ -288,9 +288,9 @@
 	          _react2.default.createElement(_Cropper2.default, {
 	            onCrop: this.updateCropInfo,
 	            onCropEnd: this.onCropEnd,
-	            src: 'https://i.imgur.com/2Byd6ef.jpg',
+	            src: 'https://i.imgur.com/NLaazNo.jpg',
 	            borderColor: color,
-	            start: [100, 100, 320, 180]
+	            start: [350, 160, 160, 110]
 	          }),
 	          _react2.default.createElement(
 	            'h3',
@@ -326,7 +326,7 @@
 	              _react2.default.createElement(
 	                Code,
 	                null,
-	                'aspectRatio: decimal'
+	                'aspectRatio: number'
 	              ),
 	              ' optional aspect ratio (width / height) that will be enforced for the crop'
 	            ),
