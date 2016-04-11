@@ -131,7 +131,7 @@ class Demo extends Component {
            A fully responsive zero-dependency image cropper
           </p>
 
-          <img src="https://img.shields.io/npm/v/react-croppy.svg?maxAge=2592000&style=flat-square"/>
+          <img src="https://img.shields.io/npm/v/react-croppy.svg?maxAge=120&style=flat-square"/>
 
           <h3 style={h3Style}>
             Install instructions
