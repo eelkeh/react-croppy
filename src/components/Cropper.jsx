@@ -1,7 +1,7 @@
 import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
 import Rect from './Rect';
-import {clip, recursiveOffset, getOffset, getPixelRatio} from '../utils';
+import {clip, recursiveOffset, getOffset, getPixelRatio, assign} from '../utils';
 
 export default class Cropper extends Component {
 
@@ -269,7 +269,7 @@ export default class Cropper extends Component {
       if (aspectRatio) {
         height = width / aspectRatio;
       }
-      Object.assign(update, {
+      assign(update, {
         x: x * ratio,
         y: y * ratio,
         width: width * ratio,

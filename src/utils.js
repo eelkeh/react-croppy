@@ -10,6 +10,13 @@ export function multiply(obj, n) {
   return obj;
 }
 
+export function assign(obj1, obj2) {
+  Object.keys(obj2).forEach(function(key) {
+    obj1[key] = obj2[key];
+  });
+  return obj1;
+};
+
 export function isRetina() {
   return global.matchMedia('(-webkit-device-pixel-ratio: 2)').matches;
 }
