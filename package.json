@@ -3,6 +3,7 @@
   "version": "0.0.3",
   "description": "A pure image cropper for React",
   "main": "dist/index.js",
+  "homepage": "https://eelkeh.github.io/react-croppy/",
   "files": [
     "dist"
   ],
