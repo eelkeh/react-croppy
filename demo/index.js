@@ -64,7 +64,9 @@ const Input = (props) => (
 );
 
 const Code = ({children}) => (
-  <span style={{background: '#f5f2f0', padding: 3, fontWeight: 500}}>{children}</span>
+  <span style={{background: '#f5f2f0', padding: 3, fontWeight: 500}}>
+    {children}
+  </span>
 );
 
 class Demo extends Component {
@@ -98,7 +100,7 @@ class Demo extends Component {
 
   genCodeSample() {
     return `<Cropper
-      src="https://i.imgur.com/2Byd6ef.jpg"
+      src="http://i.imgur.com/NLaazNo.jpg"
       borderColor="#FO12BE"
       aspectRatio={16/9}
       onCropEnd={crop => console.debug(crop)}\n/>`.replace(/ {2,}/g,'  ');
@@ -160,9 +162,9 @@ class Demo extends Component {
           <Cropper
             onCrop={this.updateCropInfo}
             onCropEnd={this.onCropEnd}
-            src='https://i.imgur.com/2Byd6ef.jpg'
+            src='https://i.imgur.com/NLaazNo.jpg'
             borderColor={color}
-            start={[100, 100, 320, 180]}
+            start={[350, 160, 160, 110]}
           />
 
           <h3 style={h3Style}>
@@ -171,7 +173,7 @@ class Demo extends Component {
           <ul style={{listStyle: 'circle inside'}}>
             <li><Code>src: string</Code> is the source of the image</li>
             <li><Code>borderColor: string</Code> is the CSS color of the border of the crop rectangle</li>
-            <li><Code>aspectRatio: decimal</Code> optional aspect ratio (width / height) that will be enforced for the crop</li>
+            <li><Code>aspectRatio: number</Code> optional aspect ratio (width / height) that will be enforced for the crop</li>
             <li><Code>onCrop()</Code> is a callback that's called on every crop</li>
             <li><Code>onCropStart(crop)</Code> is a callback that's called when the crop starts</li>
             <li><Code>onCropEnd(crop)</Code> is a callback that's called when the crop ends</li>
