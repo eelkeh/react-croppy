@@ -142,10 +142,10 @@ export default class Cropper extends Component {
   onResize = ({width, height}) => {
     let {aspectRatio, minCropWidth, minCropHeight} = this.props;
     if (minCropWidth) {
-      width = Math.max(minCropWidth, this.getRatio() * width);
+      width = Math.max(minCropWidth, width);
     }
     if (minCropHeight) {
-      height = Math.max(minCropHeight, this.getRatio() * height);
+      height = Math.max(minCropHeight, height);
     }
     if (aspectRatio) {
       height = width / aspectRatio;
@@ -164,6 +164,8 @@ export default class Cropper extends Component {
     let ratio = this.getRatio();
     let {width, height, delta, domWidth, domHeight} = this.state;
     let newState = {};
+    let maxWidth;
+    let maxHeight;
 
     if (this.state.dragging) {
       newState = {
@@ -176,12 +178,22 @@ export default class Cropper extends Component {
       width = x - this.state.x;
       height = y - this.state.y;
 
+      if (!this.props.aspectRatio) {
+        maxWidth = domWidth - this.state.x;
+        maxHeight = domHeight - this.state.y;
+
+      } else {
+        maxWidth = domWidth - this.state.x;
+        maxHeight = (domHeight - this.state.y) * this.props.aspectRatio;
+        maxWidth = maxHeight = Math.min(maxWidth, maxHeight)
+      }
+
       newState = {
         x: this.state.x,
         y: this.state.y,
         ...this.onResize({
-          width: clip(width + this.state.deltaHandler.x, 1, domWidth - this.state.x),
-          height: clip(height + this.state.deltaHandler.y , 1, domHeight - this.state.y)
+          width: clip(width + this.state.deltaHandler.x, 1, maxWidth),
+          height: clip(height + this.state.deltaHandler.y , 1, maxHeight)
         })
       }
     }
